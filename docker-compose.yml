@@ -1,0 +1,40 @@
+version: '3.9'
+
+services:
+    db:
+        image: postgres:15
+        container_name: odoo-db
+        restart: unless-stopped
+
+        environment:
+              POSTGRES_USER: fractal
+              POSTGRES_PASSWORD: fractal
+              POSTGRES_DB: postgres
+        
+        volumes:
+              - db-data:/var/lib/postgresql/data
+
+    odoo:
+        image: odoo:17
+        container_name: odoo-app
+        depends_on:
+         - db
+        restart: unless-stopped
+        
+        ports:
+         - "8069:8069"
+        
+        environment:
+           HOST: db
+           USER: fractal
+           PASSWORD: fractal
+           PORT: 5432
+        
+        volumes:
+           - odoo-data:/var/lib/odoo
+           - ./addons:/mnt/extra-addons
+           - ./config:/etc/odoo
+        
+volumes:
+    db-data:
+    odoo-data:
