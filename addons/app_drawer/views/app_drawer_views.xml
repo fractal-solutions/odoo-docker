@@ -1,0 +1,26 @@
+<odoo>
+
+    <record id="view_app_drawer_item_tree" model="ir.ui.view">
+        <field name="name">app_drawer.item.tree</field>
+        <field name="model">app_drawer.item</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_app_drawer_item_form" model="ir.ui.view">
+        <field name="name">app_drawer.item.form</field>
+        <field name="model">app_drawer.item</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>
