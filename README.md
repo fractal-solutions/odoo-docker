@@ -96,7 +96,7 @@ docker exec -it odoo-app odoo list-db
 4. Refresh browser
 
 ## Copy Existing Module
-Script: `copy_odoo_module.sh`
+Script: `copy_module.sh`
 
 Copies an existing module from:
 ```
@@ -109,7 +109,7 @@ to:
 
 Usage:
 ```bash
-./copy_odoo_module.sh my_module
+./copy_module.sh my_module
 ```
 
 Notes:
