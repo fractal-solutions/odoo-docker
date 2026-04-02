@@ -11,6 +11,7 @@
 - [Common Fixes](#common-fixes)
 - [Database](#database)
 - [Workflow](#workflow)
+- [Copy Existing Module](#copy-existing-module)
 - [Module Generator](#module-generator)
   - [Usage](#usage)
   - [Options](#options)
@@ -93,6 +94,27 @@ docker exec -it odoo-app odoo list-db
 2. Restart container
 3. Upgrade module
 4. Refresh browser
+
+## Copy Existing Module
+Script: `copy_module.sh`
+
+Copies an existing module from:
+```
+/home/fractal/dev/Woocommerce/custom/<module_name>
+```
+to:
+```
+./addons/<module_name>
+```
+
+Usage:
+```bash
+./copy_module.sh my_module
+```
+
+Notes:
+- Fails if the source module directory does not exist.
+- Overwrites `./addons/<module_name>` if it already exists.
 
 ---
 ## Module Generator
