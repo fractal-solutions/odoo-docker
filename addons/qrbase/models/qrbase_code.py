@@ -1,4 +1,5 @@
 import base64
+import secrets
 import uuid
 from io import BytesIO
 from urllib.parse import quote_plus
@@ -222,6 +223,100 @@ class QrbaseCode(models.Model):
             'outcome': 'prospect',
         }
 
+    def _qrbase_parse_landing_form(self, post):
+        self.ensure_one()
+        cleaned = {key: (value or '').strip() for key, value in post.items()}
+        title = cleaned.get('visitor_title') or False
+        first_name = cleaned.get('visitor_first_name') or ''
+        surname = cleaned.get('visitor_surname') or ''
+        gender = cleaned.get('visitor_gender') or False
+        email = (cleaned.get('visitor_email') or '').lower()
+        email_confirmation = (cleaned.get('visitor_email_confirmation') or '').lower()
+        country_code = cleaned.get('visitor_mobile_country_code') or '+254'
+        mobile_number = (cleaned.get('visitor_mobile_number') or '').replace(' ', '').replace('-', '')
+        full_name = ' '.join(part for part in [first_name, surname] if part).strip()
+        display_name = ' '.join(part for part in [title and title.title() or False, first_name, surname] if part).strip() or full_name
+        full_phone = f'{country_code}{mobile_number}' if mobile_number else ''
+        notes = cleaned.get('notes') or ''
+        otp_code = cleaned.get('otp_code') or ''
+        accepted_term_ids = []
+        for term in self.campaign_id._qrbase_active_consent_terms():
+            if cleaned.get(f'consent_term_{term.id}'):
+                accepted_term_ids.append(term.id)
+        return {
+            'visitor_title': title,
+            'visitor_first_name': first_name,
+            'visitor_surname': surname,
+            'visitor_gender': gender,
+            'visitor_name': display_name or full_name or self.name,
+            'visitor_email': email,
+            'visitor_email_confirmation': email_confirmation,
+            'visitor_mobile_country_code': country_code,
+            'visitor_mobile_number': mobile_number,
+            'visitor_phone': full_phone,
+            'notes': notes,
+            'consent_newsletter': bool(cleaned.get('consent_newsletter')),
+            'consent_share_data': bool(cleaned.get('consent_share_data')),
+            'accept_necessary_terms': bool(cleaned.get('accept_necessary_terms')),
+            'otp_code': otp_code,
+            'accepted_term_ids': accepted_term_ids,
+        }
+
+    def _qrbase_validate_landing_form(self, form_values):
+        self.ensure_one()
+        required_fields = {
+            'visitor_title': 'Please choose your title.',
+            'visitor_first_name': 'Please enter your first name.',
+            'visitor_surname': 'Please enter your surname.',
+            'visitor_gender': 'Please choose your gender.',
+            'visitor_email': 'Please enter your email address.',
+            'visitor_email_confirmation': 'Please confirm your email address.',
+            'visitor_mobile_country_code': 'Please choose your mobile country code.',
+            'visitor_mobile_number': 'Please enter your mobile number.',
+        }
+        for key, message in required_fields.items():
+            if not form_values.get(key):
+                return message
+        if form_values['visitor_email'] != form_values['visitor_email_confirmation']:
+            return 'The email and confirmation email do not match.'
+        if not form_values.get('accept_necessary_terms'):
+            return 'You need to accept the necessary terms before you can continue.'
+        required_terms = self.campaign_id._qrbase_active_consent_terms().filtered('necessary')
+        missing_terms = [term.name for term in required_terms if term.id not in form_values['accepted_term_ids']]
+        if missing_terms:
+            return 'Please accept the necessary terms before continuing.'
+        return False
+
+    def _qrbase_pending_otp_code(self, scan):
+        self.ensure_one()
+        if scan.otp_code:
+            return scan.otp_code
+        return '%06d' % secrets.randbelow(1000000)
+
+    def _qrbase_prepare_pending_registration(self, scan, form_values, otp_code):
+        self.ensure_one()
+        scan.write({
+            'visitor_title': form_values.get('visitor_title'),
+            'visitor_first_name': form_values.get('visitor_first_name'),
+            'visitor_surname': form_values.get('visitor_surname'),
+            'visitor_gender': form_values.get('visitor_gender'),
+            'visitor_name': form_values.get('visitor_name'),
+            'visitor_email': form_values.get('visitor_email'),
+            'visitor_email_confirmation': form_values.get('visitor_email_confirmation'),
+            'visitor_mobile_country_code': form_values.get('visitor_mobile_country_code'),
+            'visitor_mobile_number': form_values.get('visitor_mobile_number'),
+            'visitor_phone': form_values.get('visitor_phone'),
+            'notes': form_values.get('notes'),
+            'consent_newsletter': bool(form_values.get('consent_newsletter')),
+            'consent_share_data': bool(form_values.get('consent_share_data')),
+            'otp_code': otp_code,
+            'otp_status': 'pending',
+            'otp_requested_at': fields.Datetime.now(),
+            'otp_verified_at': False,
+        })
+        scan._qrbase_sync_consent_terms(self.campaign_id._qrbase_active_consent_terms(), form_values.get('accepted_term_ids'))
+        return scan
+
     def _qrbase_register_scan(self, scan, form_values):
         self.ensure_one()
         partner, lead, match_method, is_existing = self._qrbase_upsert_contact_and_lead(scan, form_values)
@@ -229,18 +324,28 @@ class QrbaseCode(models.Model):
         scan.write({
             'state': 'registered',
             'outcome': outcome,
+            'visitor_title': form_values.get('visitor_title'),
+            'visitor_first_name': form_values.get('visitor_first_name'),
+            'visitor_surname': form_values.get('visitor_surname'),
+            'visitor_gender': form_values.get('visitor_gender'),
             'visitor_name': form_values.get('visitor_name'),
             'visitor_email': form_values.get('visitor_email'),
+            'visitor_email_confirmation': form_values.get('visitor_email_confirmation'),
+            'visitor_mobile_country_code': form_values.get('visitor_mobile_country_code'),
+            'visitor_mobile_number': form_values.get('visitor_mobile_number'),
             'visitor_phone': form_values.get('visitor_phone'),
             'notes': form_values.get('notes'),
             'consent_newsletter': bool(form_values.get('consent_newsletter')),
             'consent_share_data': bool(form_values.get('consent_share_data')),
+            'otp_status': 'verified',
+            'otp_verified_at': fields.Datetime.now(),
             'partner_id': partner.id if partner else False,
             'lead_id': lead.id if lead else False,
             'contact_match_method': match_method,
             'existing_contact_found': is_existing,
             'resolved_outcome': outcome,
         })
+        scan._qrbase_sync_consent_terms(self.campaign_id._qrbase_active_consent_terms(), form_values.get('accepted_term_ids'))
         if partner:
             partner._qrbase_apply_scan_preferences(
                 code=self,
@@ -287,6 +392,12 @@ class QrbaseCode(models.Model):
         email = (form_values.get('visitor_email') or '').strip().lower()
         phone = (form_values.get('visitor_phone') or '').strip()
         name = (form_values.get('visitor_name') or '').strip()
+        first_name = (form_values.get('visitor_first_name') or '').strip()
+        surname = (form_values.get('visitor_surname') or '').strip()
+        title = form_values.get('visitor_title') or False
+        gender = form_values.get('visitor_gender') or False
+        mobile_country_code = form_values.get('visitor_mobile_country_code') or False
+        mobile_number = (form_values.get('visitor_mobile_number') or '').strip()
         partner, match_method = self._qrbase_find_existing_partner(form_values)
         is_existing = bool(partner)
 
@@ -294,6 +405,13 @@ class QrbaseCode(models.Model):
             'name': name or self.name,
             'email': email or False,
             'phone': phone or False,
+            'mobile': phone or False,
+            'qrbase_title': title,
+            'qrbase_first_name': first_name,
+            'qrbase_surname': surname,
+            'qrbase_gender': gender,
+            'qrbase_mobile_country_code': mobile_country_code,
+            'qrbase_mobile_number': mobile_number,
         }
         if partner:
             updates = {key: value for key, value in partner_vals.items() if value and not partner[key]}
@@ -336,6 +454,10 @@ class QrbaseCode(models.Model):
         return {
             'code': self,
             'campaign': self.campaign_id,
+            'consent_terms': self.campaign_id._qrbase_active_consent_terms(),
+            'title_choices': self.env['qrbase.scan']._qrbase_title_selection(),
+            'gender_choices': self.env['qrbase.scan']._qrbase_gender_selection(),
+            'mobile_country_code_choices': self.env['qrbase.scan']._qrbase_mobile_country_code_selection(),
             'scan': scan,
             'submitted': submitted,
             'form_values': form_values,

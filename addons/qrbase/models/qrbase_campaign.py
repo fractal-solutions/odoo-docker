@@ -72,6 +72,12 @@ class QrbaseCampaign(models.Model):
         help='Optional logo shown on the public scan page. Use this to brand the landing experience for the campaign.',
     )
     landing_logo_url = fields.Char(compute='_compute_landing_logo_url')
+    consent_term_ids = fields.One2many(
+        'qrbase.consent.term',
+        'campaign_id',
+        string='Landing Consents',
+        help='Editable consent items and terms displayed on the public QR landing page.',
+    )
     active = fields.Boolean(default=True, tracking=True, help='Archive inactive campaigns without deleting their QR code history.')
     code_ids = fields.One2many('qrbase.code', 'campaign_id', string='QR Codes', help='The QR codes that belong to this campaign.')
     code_count = fields.Integer(compute='_compute_stats', help='How many QR codes belong to this campaign.')
@@ -142,6 +148,10 @@ class QrbaseCampaign(models.Model):
     def _compute_landing_logo_url(self):
         for campaign in self:
             campaign.landing_logo_url = f'/web/image/qrbase.campaign/{campaign.id}/landing_logo' if campaign.id and campaign.landing_logo else False
+
+    def _qrbase_active_consent_terms(self):
+        self.ensure_one()
+        return self.consent_term_ids.filtered('active').sorted(lambda term: (term.sequence, term.id))
 
     def action_open_campaign_analytics(self):
         self.ensure_one()

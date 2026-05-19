@@ -56,57 +56,199 @@
                                                 </div>
                                             </t>
 
-                                            <h2 class="h3 fw-bold mb-2">Tell us who this is for</h2>
+                                            <h2 class="h3 fw-bold mb-2">Tell us about you</h2>
                                             <p class="text-muted mb-4">
-                                                This is for event check-ins, sample handouts, partner allocations, shop visits, and website captures.
+                                                Use your own details so we can recognise you, keep your record clean, and continue your journey without duplicates.
                                             </p>
+
+                                            <t t-if="form_error">
+                                                <div class="alert alert-danger">
+                                                    <strong>Please check the form.</strong>
+                                                    <div class="mt-1" t-esc="form_error"/>
+                                                </div>
+                                            </t>
+                                                    <t t-if="otp_pending">
+                                                <div class="alert alert-info d-flex flex-column flex-md-row justify-content-between gap-3 align-items-md-center">
+                                                    <div>
+                                                        <strong>Verification code ready.</strong>
+                                                        <div class="mt-1">We show it here because SMS delivery is not connected yet. Copy it or use the fill button.</div>
+                                                    </div>
+                                                    <div class="display-6 fw-bold font-monospace text-nowrap" id="qrbase_otp_code"><t t-esc="otp_display_code or ''"/></div>
+                                                </div>
+                                            </t>
 
                                             <form action="" method="post" class="o_qrbase_form">
                                                 <input type="hidden" name="csrf_token" t-att-value="csrf_token"/>
                                                 <input type="hidden" name="scan_id" t-att-value="scan.id"/>
 
                                                 <div class="row g-3">
-                                                    <div class="col-12 col-md-6">
-                                                        <label class="form-label" for="visitor_name" title="The person's full name. If they already exist in Odoo, the record will be matched instead of duplicated.">Name</label>
-                                                        <input class="form-control" id="visitor_name" type="text" name="visitor_name" t-att-value="form_values.get('visitor_name') or ''" placeholder="Customer or prospect name"/>
+                                                    <div class="col-12 col-md-3">
+                                                        <label class="form-label" for="visitor_title" title="Pick the title you want us to use for you.">Title</label>
+                                                        <select class="form-select" id="visitor_title" name="visitor_title" required="required">
+                                                            <option value="">Select</option>
+                                                            <t t-foreach="title_choices" t-as="choice">
+                                                                <option t-att-value="choice[0]" t-att-selected="(form_values.get('visitor_title') or '') == choice[0] and 'selected' or None" t-esc="choice[1]"/>
+                                                            </t>
+                                                        </select>
                                                     </div>
-                                                    <div class="col-12 col-md-6">
-                                                        <label class="form-label" for="visitor_email" title="Email is used to find an existing contact and attach this scan to the right record.">Email</label>
-                                                        <input class="form-control" id="visitor_email" type="email" name="visitor_email" t-att-value="form_values.get('visitor_email') or ''" placeholder="name@example.com"/>
+                                                    <div class="col-12 col-md-4">
+                                                        <label class="form-label" for="visitor_first_name" title="This is your first name, exactly as you want us to recognise you.">First name</label>
+                                                        <input class="form-control" id="visitor_first_name" type="text" name="visitor_first_name" required="required" t-att-value="form_values.get('visitor_first_name') or ''" placeholder="Your first name"/>
                                                     </div>
-                                                    <div class="col-12 col-md-6">
-                                                        <label class="form-label" for="visitor_phone" title="Phone number is also used for duplicate matching if no email is provided.">Phone</label>
-                                                        <input class="form-control" id="visitor_phone" type="text" name="visitor_phone" t-att-value="form_values.get('visitor_phone') or ''" placeholder="+254 ..."/>
+                                                    <div class="col-12 col-md-5">
+                                                        <label class="form-label" for="visitor_surname" title="This helps us keep your contact clean and easy to match.">Surname</label>
+                                                        <input class="form-control" id="visitor_surname" type="text" name="visitor_surname" required="required" t-att-value="form_values.get('visitor_surname') or ''" placeholder="Your surname"/>
                                                     </div>
-                                                    <div class="col-12 col-md-6">
-                                                        <label class="form-label" for="outcome_info" title="Outcome is determined automatically by Odoo based on whether this contact already has sales or POS orders.">Outcome</label>
-                                                        <input class="form-control" id="outcome_info" type="text" value="Auto-detected from sales / POS history" readonly="readonly"/>
+                                                    <div class="col-12 col-md-4">
+                                                        <label class="form-label" for="visitor_gender" title="Choose the gender that best fits you.">Gender</label>
+                                                        <select class="form-select" id="visitor_gender" name="visitor_gender" required="required">
+                                                            <option value="">Select</option>
+                                                            <t t-foreach="gender_choices" t-as="choice">
+                                                                <option t-att-value="choice[0]" t-att-selected="(form_values.get('visitor_gender') or '') == choice[0] and 'selected' or None" t-esc="choice[1]"/>
+                                                            </t>
+                                                        </select>
                                                     </div>
-                                                    <div class="col-12">
-                                                        <label class="form-label" for="notes" title="Add context such as event name, branch, offer, or follow-up instructions.">Notes</label>
-                                                        <textarea class="form-control" id="notes" name="notes" rows="4" placeholder="What happened at this scan?"><t t-esc="form_values.get('notes') or ''"/></textarea>
+                                                    <div class="col-12 col-md-8">
+                                                        <label class="form-label" for="visitor_email" title="We use your email to match your record and confirm your details.">Email</label>
+                                                        <input class="form-control" id="visitor_email" type="email" name="visitor_email" required="required" t-att-value="form_values.get('visitor_email') or ''" placeholder="name@example.com"/>
+                                                    </div>
+                                                    <div class="col-12 col-md-8">
+                                                        <label class="form-label" for="visitor_email_confirmation" title="Type your email again so we know we captured it correctly.">Confirm email</label>
+                                                        <input class="form-control" id="visitor_email_confirmation" type="email" name="visitor_email_confirmation" required="required" t-att-value="form_values.get('visitor_email_confirmation') or ''" placeholder="name@example.com"/>
+                                                    </div>
+                                                    <div class="col-12 col-md-12">
+                                                        <label class="form-label" for="visitor_mobile_number" title="We keep the country code separate so the number stays clean and easy to read.">Mobile number</label>
+                                                        <div class="input-group input-group-lg o_qrbase_mobile_input">
+                                                            <select class="form-select o_qrbase_mobile_code" id="visitor_mobile_country_code" name="visitor_mobile_country_code" required="required">
+                                                                <t t-foreach="mobile_country_code_choices" t-as="choice">
+                                                                    <option t-att-value="choice[0]" t-att-selected="(form_values.get('visitor_mobile_country_code') or '+254') == choice[0] and 'selected' or None" t-esc="choice[1]"/>
+                                                                </t>
+                                                            </select>
+                                                            <input class="form-control" id="visitor_mobile_number" type="text" name="visitor_mobile_number" required="required" t-att-value="form_values.get('visitor_mobile_number') or ''" placeholder="700 000 000"/>
+                                                        </div>
+                                                        <div class="form-text">
+                                                            Country code first, then your number without the leading zero.
+                                                        </div>
                                                     </div>
                                                 </div>
 
                                                 <div class="o_qrbase_consent_box mt-4">
-                                                    <div class="form-check form-switch mb-3">
-                                                        <input class="form-check-input" type="checkbox" role="switch" name="consent_newsletter" id="consent_newsletter" t-att-checked="form_values.get('consent_newsletter') and 'checked' or None"/>
-                                                        <label class="form-check-label" for="consent_newsletter" title="Allow us to send newsletters, offers, and updates to this contact.">I agree to receive newsletters</label>
+                                                    <div class="d-flex flex-wrap justify-content-between gap-2 align-items-center mb-3">
+                                                        <div>
+                                                            <div class="fw-semibold">Your consent choices</div>
+                                                            <div class="small text-muted">The necessary switch checks the bare minimum terms. Optional choices stay up to you.</div>
+                                                        </div>
+                                                        <div class="form-check form-switch m-0">
+                                                            <input class="form-check-input" type="checkbox" role="switch" name="accept_necessary_terms" id="accept_necessary_terms" data-qrbase-necessary-toggle="1" t-att-checked="form_values.get('accept_necessary_terms') and 'checked' or None"/>
+                                                            <label class="form-check-label" for="accept_necessary_terms" title="Use this to accept the necessary terms for registration.">Necessary terms</label>
+                                                        </div>
                                                     </div>
-                                                    <div class="form-check form-switch">
-                                                        <input class="form-check-input" type="checkbox" role="switch" name="consent_share_data" id="consent_share_data" required="required" t-att-checked="form_values.get('consent_share_data') and 'checked' or None"/>
-                                                        <label class="form-check-label" for="consent_share_data" title="Required consent to store and process this contact's details in Odoo.">I accept data sharing and processing</label>
+                                                    <div class="row g-3">
+                                                        <t t-if="consent_terms">
+                                                            <t t-foreach="consent_terms" t-as="term">
+                                                                <div class="col-12">
+                                                                    <div t-attf-class="border rounded-4 p-3 #{'bg-white' if theme_class == 'o_qrbase_theme_light' else 'bg-transparent'}">
+                                                                        <div class="form-check form-switch">
+                                                                            <input class="form-check-input" type="checkbox" role="switch" t-att-name="'consent_term_%s' % term.id" t-att-id="'consent_term_%s' % term.id" t-att-data-qrbase-required-term="term.necessary and '1' or None" t-att-checked="term.id in (form_values.get('accepted_term_ids') or []) and 'checked' or None"/>
+                                                                            <label class="form-check-label fw-semibold" t-att-for="'consent_term_%s' % term.id">
+                                                                                <span t-esc="term.name"/>
+                                                                                <span t-if="term.necessary" class="badge text-bg-warning ms-2">Necessary</span>
+                                                                                <span t-else="" class="badge text-bg-secondary ms-2">Optional</span>
+                                                                            </label>
+                                                                        </div>
+                                                                        <div class="small text-muted mt-2" t-if="term.description">
+                                                                            <t t-out="term.description"/>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </t>
+                                                        </t>
+                                                        <t t-else="">
+                                                            <div class="col-12">
+                                                                <div class="alert alert-light mb-0">
+                                                                    No optional consent items have been configured for this campaign yet.
+                                                                </div>
+                                                            </div>
+                                                        </t>
                                                     </div>
-                                                    <div class="small text-muted mt-2">
-                                                        This lets us keep the QR journey connected to the right customer profile without creating duplicates.
+                                                </div>
+
+                                                <div class="o_qrbase_consent_box mt-4" t-if="otp_pending or otp_display_code">
+                                                    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-md-center">
+                                                        <div>
+                                                            <div class="fw-semibold">Verification code</div>
+                                                            <div class="small text-muted">Because SMS delivery is not connected yet, the code is shown here for you to copy or autofill.</div>
+                                                        </div>
+                                                        <div class="badge rounded-pill text-bg-dark px-3 py-2 font-monospace fs-5" id="qrbase_otp_code_box"><t t-esc="otp_display_code or ''"/></div>
+                                                    </div>
+                                                    <div class="row g-3 mt-2 align-items-end">
+                                                        <div class="col-12 col-md-7">
+                                                            <label class="form-label" for="otp_code">Enter the code</label>
+                                                            <input class="form-control form-control-lg" id="otp_code" type="text" name="otp_code" autocomplete="one-time-code" t-att-value="form_values.get('otp_code') or ''" placeholder="123456"/>
+                                                        </div>
+                                                        <div class="col-12 col-md-5">
+                                                            <button type="button" class="btn btn-outline-light btn-lg w-100" data-qrbase-otp-fill="1">Auto-fill code</button>
+                                                        </div>
                                                     </div>
                                                 </div>
 
                                                 <div class="d-flex flex-wrap gap-2 mt-4">
-                                                    <button type="submit" class="btn btn-dark btn-lg px-4">Save scan</button>
-                                                    <a t-if="target_url" t-att-href="target_url" class="btn btn-outline-secondary btn-lg px-4">Continue</a>
+                                                    <button type="submit" class="btn btn-dark btn-lg px-4">Continue</button>
+                                                    <a t-if="target_url" t-att-href="target_url" class="btn btn-outline-secondary btn-lg px-4">Go to your next step</a>
                                                 </div>
                                             </form>
+
+                                            <script type="text/javascript">
+                                                (function () {
+                                                    function initQrbaseLanding() {
+                                                    var necessaryToggle = document.querySelector('[data-qrbase-necessary-toggle]');
+                                                    var requiredTerms = Array.prototype.slice.call(document.querySelectorAll('[data-qrbase-required-term="1"]'));
+                                                    var otpFillButton = document.querySelector('[data-qrbase-otp-fill="1"]');
+                                                    var otpInput = document.getElementById('otp_code');
+                                                    var otpCode = document.getElementById('qrbase_otp_code_box');
+
+                                                    function syncNecessaryState() {
+                                                        if (!necessaryToggle || !requiredTerms.length) {
+                                                            return;
+                                                        }
+                                                        requiredTerms.forEach(function (checkbox) {
+                                                            checkbox.checked = necessaryToggle.checked;
+                                                        });
+                                                    }
+
+                                                    function refreshNecessaryToggle() {
+                                                        if (!necessaryToggle || !requiredTerms.length) {
+                                                            return;
+                                                        }
+                                                        necessaryToggle.checked = requiredTerms.every(function (checkbox) {
+                                                            return checkbox.checked;
+                                                        });
+                                                    }
+
+                                                    if (necessaryToggle) {
+                                                        necessaryToggle.addEventListener('change', syncNecessaryState);
+                                                        requiredTerms.forEach(function (checkbox) {
+                                                            checkbox.addEventListener('change', refreshNecessaryToggle);
+                                                        });
+                                                        syncNecessaryState();
+                                                        refreshNecessaryToggle();
+                                                    }
+
+                                                    if (otpFillButton &amp;&amp; otpInput &amp;&amp; otpCode) {
+                                                        otpFillButton.addEventListener('click', function () {
+                                                            otpInput.value = (otpCode.textContent || '').trim();
+                                                            otpInput.focus();
+                                                        });
+                                                    }
+                                                    }
+
+                                                    if (document.readyState === 'loading') {
+                                                        document.addEventListener('DOMContentLoaded', initQrbaseLanding);
+                                                    } else {
+                                                        initQrbaseLanding();
+                                                    }
+                                                })();
+                                            </script>
                                         </div>
                                     </div>
                                 </div>
@@ -238,6 +380,14 @@
                 border-radius: 1.25rem;
                 padding: 1rem 1rem 0.25rem;
                 background: rgba(255, 255, 255, 0.03);
+                }
+                .o_qrbase_mobile_input {
+                overflow: hidden;
+                border-radius: 1rem;
+                }
+                .o_qrbase_mobile_code {
+                max-width: 14rem;
+                flex: 0 0 14rem;
                 }
                 .o_qrbase_theme_light .o_qrbase_consent_box {
                 border-color: rgba(15, 23, 42, 0.1);

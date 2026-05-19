@@ -8,6 +8,14 @@
             <xpath expr="//notebook" position="inside">
                 <page string="QR Tracking" name="qr_tracking">
                     <group>
+                        <group string="QR Identity">
+                            <field name="qrbase_title"/>
+                            <field name="qrbase_first_name"/>
+                            <field name="qrbase_surname"/>
+                            <field name="qrbase_gender"/>
+                            <field name="qrbase_mobile_country_code"/>
+                            <field name="qrbase_mobile_number"/>
+                        </group>
                         <group string="Lifecycle">
                             <field name="qrbase_status"/>
                             <field name="qrbase_customer_since"/>

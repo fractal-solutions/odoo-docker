@@ -89,6 +89,36 @@
                                 </group>
                             </group>
                         </page>
+                        <page string="Consents" name="consents">
+                            <group>
+                                <div class="text-muted mb-3">
+                                    Configure the consent toggles that appear on the public QR landing page. Mark the items that are necessary so visitors cannot continue without accepting them.
+                                </div>
+                                <field name="consent_term_ids">
+                                    <tree editable="bottom">
+                                        <field name="sequence"/>
+                                        <field name="name"/>
+                                        <field name="necessary"/>
+                                        <field name="active"/>
+                                    </tree>
+                                    <form>
+                                        <sheet>
+                                            <group>
+                                                <group>
+                                                    <field name="sequence"/>
+                                                    <field name="name"/>
+                                                    <field name="necessary"/>
+                                                    <field name="active"/>
+                                                </group>
+                                                <group>
+                                                    <field name="description" placeholder="Write the consent text that your visitor will see on the QR landing page."/>
+                                                </group>
+                                            </group>
+                                        </sheet>
+                                    </form>
+                                </field>
+                            </group>
+                        </page>
                         <page string="QR Codes" name="codes">
                             <field name="code_ids">
                                 <tree>
@@ -307,8 +337,19 @@
                         </group>
                         <group>
                             <field name="visitor_name"/>
+                            <field name="visitor_title"/>
+                            <field name="visitor_first_name"/>
+                            <field name="visitor_surname"/>
+                            <field name="visitor_gender"/>
                             <field name="visitor_email"/>
+                            <field name="visitor_email_confirmation"/>
                             <field name="visitor_phone"/>
+                            <field name="visitor_mobile_country_code"/>
+                            <field name="visitor_mobile_number"/>
+                            <field name="otp_code"/>
+                            <field name="otp_status"/>
+                            <field name="otp_requested_at"/>
+                            <field name="otp_verified_at"/>
                             <field name="partner_id"/>
                             <field name="lead_id"/>
                             <field name="consent_newsletter"/>
@@ -320,6 +361,16 @@
                         <field name="ip_address" readonly="1"/>
                         <field name="user_agent" readonly="1"/>
                         <field name="referrer" readonly="1"/>
+                    </group>
+                    <group string="Consent Snapshot">
+                        <field name="consent_term_ids" readonly="1">
+                            <tree>
+                                <field name="sequence" invisible="1"/>
+                                <field name="name"/>
+                                <field name="necessary"/>
+                                <field name="accepted"/>
+                            </tree>
+                        </field>
                     </group>
                     <group>
                         <field name="notes"/>

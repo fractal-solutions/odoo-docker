@@ -16,6 +16,9 @@ It is designed for teams that need to know where a lead or customer came from, w
 - Creates unique QR codes with purpose and source metadata
 - Gives each QR code a public landing page
 - Logs scans and captures visitor details
+- Uses split identity fields, split mobile input, and direct-to-you landing copy
+- Shows configurable landing-page consent terms with necessary and optional toggles
+- Displays a one-time verification code in the UI until the visitor confirms it
 - Creates or updates CRM leads from scan submissions
 - Stores QR attribution on the customer profile
 - Tracks consent, duplicate contacts, and automatic prospect/customer outcomes
@@ -65,7 +68,7 @@ The backend menu exposes:
 - analytics dashboards
 - report exports
 
-The public landing page includes a branded QR scan experience with a logo and lead capture form.
+The public landing page includes a branded QR scan experience with a logo, configurable consent terms, and a direct lead capture form.
 
 ## Notes
 

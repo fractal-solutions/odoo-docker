@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from odoo import api, fields, models
+from .qrbase_consent import qrbase_mobile_country_code_selection
 
 
 class ResPartner(models.Model):
@@ -20,6 +21,42 @@ class ResPartner(models.Model):
     qrbase_customer_since = fields.Datetime(tracking=True)
     qrbase_last_purchase_at = fields.Datetime(tracking=True)
     qrbase_lapsed_at = fields.Datetime(tracking=True)
+    qrbase_title = fields.Selection(
+        [
+            ('mr', 'Mr'),
+            ('mrs', 'Mrs'),
+            ('ms', 'Ms'),
+            ('mx', 'Mx'),
+            ('dr', 'Dr'),
+            ('prof', 'Prof'),
+            ('other', 'Other'),
+        ],
+        tracking=True,
+        help='The preferred title captured from the QR landing page.',
+    )
+    qrbase_first_name = fields.Char(
+        tracking=True,
+        help='The first name captured from the QR landing page.',
+    )
+    qrbase_surname = fields.Char(
+        tracking=True,
+        help='The surname captured from the QR landing page.',
+    )
+    qrbase_gender = fields.Selection(
+        [('male', 'Male'), ('female', 'Female')],
+        tracking=True,
+        help='The gender chosen on the QR landing page.',
+    )
+    qrbase_mobile_country_code = fields.Selection(
+        selection='_qrbase_mobile_country_code_selection',
+        tracking=True,
+        default='+254',
+        help='The country dial code captured from the QR landing page.',
+    )
+    qrbase_mobile_number = fields.Char(
+        tracking=True,
+        help='The phone number without the country code captured from the QR landing page.',
+    )
     qrbase_attribution_label = fields.Char(
         string='QR Attribution',
         tracking=True,
@@ -60,6 +97,10 @@ class ResPartner(models.Model):
             partner.qrbase_scan_count = len(scans)
             partner.qrbase_first_scan_at = scans[0].scanned_at if scans else False
             partner.qrbase_last_scan_at = scans[-1].scanned_at if scans else False
+
+    @api.model
+    def _qrbase_mobile_country_code_selection(self):
+        return qrbase_mobile_country_code_selection(self.env)
 
     def _qrbase_mark_prospect(self, code=None, scan=None):
         for partner in self:
