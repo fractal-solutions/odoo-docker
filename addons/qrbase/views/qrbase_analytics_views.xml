@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_qrbase_scan_search" model="ir.ui.view">
+        <field name="name">qrbase.scan.search</field>
+        <field name="model">qrbase.scan</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="campaign_id"/>
+                <field name="code_id"/>
+                <field name="partner_id"/>
+                <field name="visitor_name"/>
+                <field name="visitor_email"/>
+                <field name="visitor_phone"/>
+                <filter string="Opened" name="filter_opened" domain="[('state', '=', 'opened')]"/>
+                <filter string="Registered" name="filter_registered" domain="[('state', '=', 'registered')]"/>
+                <filter string="Existing Contacts" name="filter_existing" domain="[('existing_contact_found', '=', True)]"/>
+                <filter string="New Contacts" name="filter_new" domain="[('existing_contact_found', '=', False)]"/>
+                <filter string="Customers" name="filter_customer" domain="[('resolved_outcome', '=', 'customer')]"/>
+                <filter string="Prospects" name="filter_prospect" domain="[('resolved_outcome', '=', 'prospect')]"/>
+                <filter string="Samples" name="filter_sample" domain="[('outcome', '=', 'sample')]"/>
+                <filter string="Newsletter Opt-In" name="filter_newsletter" domain="[('consent_newsletter', '=', True)]"/>
+                <filter string="Data Consent" name="filter_data_consent" domain="[('consent_share_data', '=', True)]"/>
+                <separator/>
+                <filter string="By Campaign" name="group_by_campaign" context="{'group_by': 'campaign_id'}"/>
+                <filter string="By QR Code" name="group_by_code" context="{'group_by': 'code_id'}"/>
+                <filter string="By Outcome" name="group_by_outcome" context="{'group_by': 'resolved_outcome'}"/>
+                <filter string="By Match Method" name="group_by_match_method" context="{'group_by': 'contact_match_method'}"/>
+                <filter string="By Month" name="group_by_month" context="{'group_by': 'scanned_at:month'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_qrbase_scan_graph" model="ir.ui.view">
+        <field name="name">qrbase.scan.graph</field>
+        <field name="model">qrbase.scan</field>
+        <field name="arch" type="xml">
+            <graph string="QR Scan Analytics" type="bar">
+                <field name="code_id" type="row"/>
+                <field name="resolved_outcome" type="col"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_qrbase_scan_pivot" model="ir.ui.view">
+        <field name="name">qrbase.scan.pivot</field>
+        <field name="model">qrbase.scan</field>
+        <field name="arch" type="xml">
+            <pivot string="QR Scan Pivot" display_quantity="1">
+                <field name="code_id" type="row"/>
+                <field name="resolved_outcome" type="col"/>
+                <field name="contact_match_method" type="row"/>
+            </pivot>
+        </field>
+    </record>
+
+    <menuitem id="menu_qrbase_analytics" name="Analytics" parent="menu_qrbase_root" action="action_qrbase_scan_analytics" sequence="40"/>
+    <menuitem id="menu_qrbase_reports" name="Reports" parent="menu_qrbase_root" action="action_qrbase_report_wizard" sequence="50"/>
+</odoo>

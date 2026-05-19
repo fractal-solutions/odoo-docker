@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_qrbase_code" model="ir.actions.report">
+        <field name="name">QR Code</field>
+        <field name="model">qrbase.code</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">qrbase.report_qrbase_code</field>
+        <field name="report_file">qrbase.report_qrbase_code</field>
+        <field name="binding_model_id" ref="model_qrbase_code"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'QR - %s' % (object.name)</field>
+    </record>
+
+    <template id="report_qrbase_code">
+        <t t-call="web.external_layout">
+            <t t-foreach="docs" t-as="o">
+                <div class="page">
+                    <div class="row mb-4 align-items-center">
+                        <div class="col-8">
+                            <h2 class="mb-1">QR Code</h2>
+                            <div class="text-muted" t-esc="o.name"/>
+                            <div class="small text-muted" t-if="o.campaign_id">
+                                Campaign: <span t-esc="o.campaign_id.name"/>
+                            </div>
+                        </div>
+                        <div class="col-4 text-end" t-if="o.campaign_id.landing_logo_url">
+                            <img t-att-src="o.campaign_id.landing_logo_url" alt="Campaign logo" style="max-height: 64px; max-width: 180px; object-fit: contain;"/>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12 col-md-6">
+                            <div class="border rounded-4 p-4 text-center bg-white">
+                                <img t-if="o.qr_image" t-att-src="image_data_uri(o.qr_image)" alt="QR Code" style="width: 320px; max-width: 100%; height: auto;"/>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="border rounded-4 p-4 h-100">
+                                <div class="mb-3">
+                                    <strong>Purpose</strong>
+                                    <div t-esc="o.purpose or o.campaign_id.purpose or 'General tracking'"/>
+                                </div>
+                                <div class="mb-3" t-if="o.target_url or o.campaign_id.target_url">
+                                    <strong>Destination</strong>
+                                    <div t-esc="o.target_url or o.campaign_id.target_url"/>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Public URL</strong>
+                                    <div t-esc="o.qr_public_url"/>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Token</strong>
+                                    <div t-esc="o.token"/>
+                                </div>
+                                <div class="mb-0">
+                                    <strong>Allocation</strong>
+                                    <div t-esc="o.campaign_id.allocation_kind"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_qrbase_insights" model="ir.actions.report">
+        <field name="name">QR Insights Report</field>
+        <field name="model">qrbase.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">qrbase.report_qrbase_insights</field>
+        <field name="report_file">qrbase.report_qrbase_insights</field>
+        <field name="binding_model_id" ref="model_qrbase_report_wizard"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'QR Insights - %s' % (object.report_title)</field>
+    </record>
+
+    <template id="report_qrbase_insights">
+        <t t-call="web.external_layout">
+            <t t-foreach="docs" t-as="wizard">
+                <div class="page">
+                    <div class="mb-4">
+                        <h2 class="mb-1" t-esc="wizard.report_title"/>
+                        <div class="text-muted">
+                            <span t-if="wizard.date_from">From <span t-esc="wizard.date_from"/></span>
+                            <span t-if="wizard.date_to"> to <span t-esc="wizard.date_to"/></span>
+                            <span t-if="wizard.campaign_id"> | Campaign: <span t-esc="wizard.campaign_id.name"/></span>
+                            <span t-if="wizard.code_id"> | QR Code: <span t-esc="wizard.code_id.name"/></span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-12 col-md-4 mb-3">
+                            <div class="border rounded-3 p-3">
+                                <strong>Total scans</strong>
+                                <div class="display-6" t-esc="wizard.scan_count"/>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <div class="border rounded-3 p-3">
+                                <strong>Customers</strong>
+                                <div class="display-6" t-esc="wizard.customer_count"/>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4 mb-3">
+                            <div class="border rounded-3 p-3">
+                                <strong>Prospects</strong>
+                                <div class="display-6" t-esc="wizard.prospect_count"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Opened</td><td t-esc="wizard.opened_count"/></tr>
+                            <tr><td>Registered</td><td t-esc="wizard.registered_count"/></tr>
+                            <tr><td>Unique contacts</td><td t-esc="wizard.unique_contact_count"/></tr>
+                            <tr><td>Samples</td><td t-esc="wizard.sample_count"/></tr>
+                            <tr><td>Duplicates</td><td t-esc="wizard.duplicate_count"/></tr>
+                            <tr><td>Newsletter opt-ins</td><td t-esc="wizard.newsletter_count"/></tr>
+                            <tr><td>Data sharing consents</td><td t-esc="wizard.data_consent_count"/></tr>
+                            <tr><td>Customer rate</td><td t-esc="'%.1f%%' % wizard.customer_rate"/></tr>
+                            <tr><td>Duplicate rate</td><td t-esc="'%.1f%%' % wizard.duplicate_rate"/></tr>
+                            <tr><td>Newsletter rate</td><td t-esc="'%.1f%%' % wizard.newsletter_rate"/></tr>
+                            <tr><td>Data consent rate</td><td t-esc="'%.1f%%' % wizard.data_consent_rate"/></tr>
+                        </tbody>
+                    </table>
+
+                    <h3 class="mt-4">Scan Detail</h3>
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Campaign</th>
+                                <th>Code</th>
+                                <th>Contact</th>
+                                <th>Outcome</th>
+                                <th>Match</th>
+                                <th>Consent</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="wizard._qrbase_get_scans()[:100]" t-as="scan">
+                                <tr>
+                                    <td t-esc="scan.scanned_at"/>
+                                    <td t-esc="scan.campaign_id.name"/>
+                                    <td t-esc="scan.code_id.name"/>
+                                    <td>
+                                        <div t-esc="scan.visitor_name or scan.partner_id.display_name or '-'"/>
+                                        <div class="text-muted small" t-esc="scan.visitor_email or scan.visitor_phone or ''"/>
+                                    </td>
+                                    <td t-esc="scan.resolved_outcome or scan.outcome or scan.state"/>
+                                    <td t-esc="scan.contact_match_method or ('existing' if scan.existing_contact_found else 'new')"/>
+                                    <td>
+                                        <span t-if="scan.consent_newsletter">Newsletter</span>
+                                        <span t-if="scan.consent_newsletter and scan.consent_share_data">, </span>
+                                        <span t-if="scan.consent_share_data">Data Share</span>
+                                        <span t-if="not scan.consent_newsletter and not scan.consent_share_data">None</span>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_qrbase" model="ir.ui.view">
+        <field name="name">res.partner.form.qrbase</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="QR Tracking" name="qr_tracking">
+                    <group>
+                        <group string="Lifecycle">
+                            <field name="qrbase_status"/>
+                            <field name="qrbase_customer_since"/>
+                            <field name="qrbase_last_purchase_at"/>
+                            <field name="qrbase_lapsed_at"/>
+                        </group>
+                        <group string="Traceability">
+                            <field name="qrbase_code_id"/>
+                            <field name="qrbase_last_campaign_id"/>
+                            <field name="qrbase_last_source_id"/>
+                            <field name="qrbase_attribution_label"/>
+                            <field name="qrbase_attribution_kind"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="qrbase_newsletter_opt_in"/>
+                        <field name="qrbase_data_share_consent"/>
+                        <field name="qrbase_scan_count" readonly="1"/>
+                        <field name="qrbase_first_scan_at" readonly="1"/>
+                        <field name="qrbase_last_scan_at" readonly="1"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

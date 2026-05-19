@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="qrbase_scan_landing_page" name="QR Scan Landing Page">
+        <t t-call="website.layout">
+            <t t-set="title">QR Base</t>
+            <t t-set="body_class">o_qrbase_landing</t>
+            <div t-attf-class="o_qrbase_hero #{theme_class or 'o_qrbase_theme_dark'}">
+                <div class="o_qrbase_bg_blob o_qrbase_bg_blob_left"></div>
+                <div class="o_qrbase_bg_blob o_qrbase_bg_blob_right"></div>
+                <div class="container py-5 position-relative">
+                    <div class="row justify-content-center">
+                        <div class="col-12 col-lg-10 col-xl-9">
+                            <div class="o_qrbase_card">
+                                <div class="row g-0 align-items-stretch">
+                                    <div class="col-lg-5 o_qrbase_brand_panel">
+                                        <div class="o_qrbase_brand">
+                                            <div class="o_qrbase_logo_wrap">
+                                                <img t-att-src="landing_logo_url or '/qrbase/static/description/icon.svg'" alt="Campaign logo" class="o_qrbase_logo"/>
+                                            </div>
+                                            <div class="mt-4">
+                                                <div class="o_qrbase_kicker">QR tracking</div>
+                                                <h1 class="display-5 fw-bold mb-3">Scan. Capture. Convert.</h1>
+                                                <p class="lead mb-4">
+                                                    This QR code belongs to <strong t-esc="code.campaign_id.name"/>
+                                                    and is set up for <span t-esc="code.campaign_id.allocation_kind"/>.
+                                                </p>
+                                                <div class="o_qrbase_meta">
+                                                    <div class="mb-2"><strong>Purpose:</strong> <span t-esc="code.purpose or code.campaign_id.purpose or 'General tracking'"/></div>
+                                                    <div class="mb-2" t-if="target_url"><strong>Next step:</strong> <span t-esc="target_url"/></div>
+                                                    <div class="mb-0">Use this page to register the contact, capture consent, and let Odoo decide if this is a prospect or a customer.</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="o_qrbase_preview mt-4">
+                                            <img t-if="code.qr_image_url" t-att-src="code.qr_image_url" alt="QR Code" class="img-fluid rounded-4 shadow-sm bg-white p-2 o_qrbase_qr_preview"/>
+                                        </div>
+                                        <div class="o_qrbase_preview_actions mt-3 d-flex flex-wrap gap-2">
+                                            <a t-if="target_url" t-att-href="target_url" class="btn btn-outline-light btn-sm">Open destination</a>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-7 o_qrbase_form_panel">
+                                        <div class="p-4 p-lg-5">
+                                            <t t-if="contact_message">
+                                                <div t-attf-class="alert #{'alert-warning' if contact_is_existing else 'alert-success'}">
+                                                    <strong t-if="contact_is_existing">Existing contact found.</strong>
+                                                    <strong t-else="">Saved.</strong>
+                                                    <div class="mt-1" t-esc="contact_message"/>
+                                                    <div t-if="contact_is_existing and contact_status" class="small mt-2">
+                                                        Matched by <span class="text-uppercase" t-esc="contact_status"/>.
+                                                    </div>
+                                                </div>
+                                            </t>
+                                            <t t-elif="submitted">
+                                                <div class="alert alert-success">
+                                                    <strong>Saved.</strong> We have captured this scan and updated the customer record.
+                                                </div>
+                                            </t>
+
+                                            <h2 class="h3 fw-bold mb-2">Tell us who this is for</h2>
+                                            <p class="text-muted mb-4">
+                                                This is for event check-ins, sample handouts, partner allocations, shop visits, and website captures.
+                                            </p>
+
+                                            <form action="" method="post" class="o_qrbase_form">
+                                                <input type="hidden" name="csrf_token" t-att-value="csrf_token"/>
+                                                <input type="hidden" name="scan_id" t-att-value="scan.id"/>
+
+                                                <div class="row g-3">
+                                                    <div class="col-12 col-md-6">
+                                                        <label class="form-label" for="visitor_name" title="The person's full name. If they already exist in Odoo, the record will be matched instead of duplicated.">Name</label>
+                                                        <input class="form-control" id="visitor_name" type="text" name="visitor_name" t-att-value="form_values.get('visitor_name') or ''" placeholder="Customer or prospect name"/>
+                                                    </div>
+                                                    <div class="col-12 col-md-6">
+                                                        <label class="form-label" for="visitor_email" title="Email is used to find an existing contact and attach this scan to the right record.">Email</label>
+                                                        <input class="form-control" id="visitor_email" type="email" name="visitor_email" t-att-value="form_values.get('visitor_email') or ''" placeholder="name@example.com"/>
+                                                    </div>
+                                                    <div class="col-12 col-md-6">
+                                                        <label class="form-label" for="visitor_phone" title="Phone number is also used for duplicate matching if no email is provided.">Phone</label>
+                                                        <input class="form-control" id="visitor_phone" type="text" name="visitor_phone" t-att-value="form_values.get('visitor_phone') or ''" placeholder="+254 ..."/>
+                                                    </div>
+                                                    <div class="col-12 col-md-6">
+                                                        <label class="form-label" for="outcome_info" title="Outcome is determined automatically by Odoo based on whether this contact already has sales or POS orders.">Outcome</label>
+                                                        <input class="form-control" id="outcome_info" type="text" value="Auto-detected from sales / POS history" readonly="readonly"/>
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <label class="form-label" for="notes" title="Add context such as event name, branch, offer, or follow-up instructions.">Notes</label>
+                                                        <textarea class="form-control" id="notes" name="notes" rows="4" placeholder="What happened at this scan?"><t t-esc="form_values.get('notes') or ''"/></textarea>
+                                                    </div>
+                                                </div>
+
+                                                <div class="o_qrbase_consent_box mt-4">
+                                                    <div class="form-check form-switch mb-3">
+                                                        <input class="form-check-input" type="checkbox" role="switch" name="consent_newsletter" id="consent_newsletter" t-att-checked="form_values.get('consent_newsletter') and 'checked' or None"/>
+                                                        <label class="form-check-label" for="consent_newsletter" title="Allow us to send newsletters, offers, and updates to this contact.">I agree to receive newsletters</label>
+                                                    </div>
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox" role="switch" name="consent_share_data" id="consent_share_data" required="required" t-att-checked="form_values.get('consent_share_data') and 'checked' or None"/>
+                                                        <label class="form-check-label" for="consent_share_data" title="Required consent to store and process this contact's details in Odoo.">I accept data sharing and processing</label>
+                                                    </div>
+                                                    <div class="small text-muted mt-2">
+                                                        This lets us keep the QR journey connected to the right customer profile without creating duplicates.
+                                                    </div>
+                                                </div>
+
+                                                <div class="d-flex flex-wrap gap-2 mt-4">
+                                                    <button type="submit" class="btn btn-dark btn-lg px-4">Save scan</button>
+                                                    <a t-if="target_url" t-att-href="target_url" class="btn btn-outline-secondary btn-lg px-4">Continue</a>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <style>
+                .o_qrbase_hero {
+                position: relative;
+                overflow: hidden;
+                min-height: 100vh;
+                color: #f8fafc;
+                }
+                .o_qrbase_theme_dark {
+                background:
+                radial-gradient(circle at top left, rgba(255, 207, 92, 0.35), transparent 34%),
+                radial-gradient(circle at bottom right, rgba(14, 28, 58, 0.92), rgba(5, 10, 22, 0.98));
+                }
+                .o_qrbase_theme_light {
+                background:
+                radial-gradient(circle at top left, rgba(255, 238, 180, 0.95), transparent 32%),
+                radial-gradient(circle at bottom right, rgba(226, 233, 241, 0.96), rgba(244, 247, 251, 1));
+                color: #0f172a;
+                }
+                .o_qrbase_theme_light .o_qrbase_card {
+                background: rgba(255, 255, 255, 0.9);
+                border-color: rgba(15, 23, 42, 0.08);
+                }
+                .o_qrbase_theme_light .o_qrbase_brand_panel {
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(248, 250, 252, 0.9));
+                color: #0f172a;
+                border-right-color: rgba(15, 23, 42, 0.08);
+                }
+                .o_qrbase_theme_light .o_qrbase_meta,
+                .o_qrbase_theme_light .text-muted {
+                color: #475569 !important;
+                }
+                .o_qrbase_theme_light .o_qrbase_kicker {
+                color: #9a6700;
+                }
+                .o_qrbase_theme_light .btn-outline-light {
+                color: #0f172a;
+                border-color: rgba(15, 23, 42, 0.25);
+                }
+                .o_qrbase_bg_blob {
+                position: absolute;
+                width: 26rem;
+                height: 26rem;
+                border-radius: 999px;
+                filter: blur(30px);
+                opacity: 0.35;
+                }
+                .o_qrbase_bg_blob_left {
+                top: -8rem;
+                left: -8rem;
+                background: #f7c948;
+                }
+                .o_qrbase_bg_blob_right {
+                bottom: -10rem;
+                right: -8rem;
+                background: #66d9ef;
+                }
+                .o_qrbase_card {
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                border-radius: 2rem;
+                overflow: hidden;
+                backdrop-filter: blur(18px);
+                background: rgba(9, 16, 32, 0.82);
+                box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+                }
+                .o_qrbase_brand_panel {
+                background: linear-gradient(180deg, rgba(255, 215, 90, 0.14), rgba(255, 255, 255, 0.02));
+                padding: 2rem;
+                border-right: 1px solid rgba(255, 255, 255, 0.08);
+                }
+                .o_qrbase_form_panel {
+                background: rgba(255, 255, 255, 0.03);
+                }
+                .o_qrbase_logo_wrap {
+                width: 6rem;
+                height: 6rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 1.6rem;
+                background: rgba(255, 255, 255, 0.92);
+                box-shadow: 0 14px 30px rgba(15, 23, 42, 0.12);
+                }
+                .o_qrbase_logo {
+                max-width: 4.8rem;
+                max-height: 4.8rem;
+                object-fit: contain;
+                }
+                .o_qrbase_kicker {
+                display: inline-block;
+                text-transform: uppercase;
+                letter-spacing: 0.18em;
+                font-size: 0.72rem;
+                color: #ffd76a;
+                margin-bottom: 0.75rem;
+                }
+                .o_qrbase_meta {
+                font-size: 0.95rem;
+                color: rgba(255, 255, 255, 0.82);
+                }
+                .o_qrbase_qr_preview {
+                width: min(100%, 22rem);
+                max-width: 22rem;
+                padding: 0.75rem !important;
+                }
+                .o_qrbase_form .form-control,
+                .o_qrbase_form .form-select {
+                background: rgba(255, 255, 255, 0.96);
+                border-radius: 1rem;
+                border: 0;
+                min-height: 3.1rem;
+                }
+                .o_qrbase_form .form-control:focus,
+                .o_qrbase_form .form-select:focus {
+                box-shadow: 0 0 0 0.2rem rgba(255, 215, 106, 0.25);
+                }
+                .o_qrbase_form textarea.form-control {
+                min-height: 8rem;
+                }
+                .o_qrbase_consent_box {
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 1.25rem;
+                padding: 1rem 1rem 0.25rem;
+                background: rgba(255, 255, 255, 0.03);
+                }
+                .o_qrbase_theme_light .o_qrbase_consent_box {
+                border-color: rgba(15, 23, 42, 0.1);
+                background: rgba(255, 255, 255, 0.78);
+                }
+                .o_qrbase_theme_light .o_qrbase_form .form-control,
+                .o_qrbase_theme_light .o_qrbase_form .form-select {
+                background: rgba(255, 255, 255, 0.98);
+                color: #0f172a;
+                }
+                .o_qrbase_theme_light .o_qrbase_card,
+                .o_qrbase_theme_light .o_qrbase_consent_box {
+                backdrop-filter: blur(10px);
+                }
+            </style>
+        </t>
+    </template>
+</odoo>

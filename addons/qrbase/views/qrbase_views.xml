@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_qrbase_scan_analytics" model="ir.actions.act_window">
+        <field name="name">QR Analytics</field>
+        <field name="res_model">qrbase.scan</field>
+        <field name="view_mode">graph,pivot,tree,form</field>
+        <field name="context">{'search_default_group_by_code': 1}</field>
+    </record>
+
+    <record id="action_qrbase_code_analytics" model="ir.actions.act_window">
+        <field name="name">QR Code Analytics</field>
+        <field name="res_model">qrbase.scan</field>
+        <field name="view_mode">graph,pivot,tree,form</field>
+        <field name="domain">[('code_id', '=', active_id)]</field>
+        <field name="context">{'default_code_id': active_id, 'search_default_group_by_code': 1}</field>
+    </record>
+
+    <record id="action_qrbase_report_wizard" model="ir.actions.act_window">
+        <field name="name">QR Reports</field>
+        <field name="res_model">qrbase.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="action_qrbase_code_report_wizard" model="ir.actions.act_window">
+        <field name="name">QR Code Reports</field>
+        <field name="res_model">qrbase.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_code_id': active_id}</field>
+    </record>
+
+    <record id="view_qrbase_campaign_tree" model="ir.ui.view">
+        <field name="name">qrbase.campaign.tree</field>
+        <field name="model">qrbase.campaign</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="allocation_kind"/>
+                <field name="allocation_ref"/>
+                <field name="code_count"/>
+                <field name="scan_count"/>
+                <field name="customer_count"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_qrbase_campaign_form" model="ir.ui.view">
+        <field name="name">qrbase.campaign.form</field>
+        <field name="model">qrbase.campaign</field>
+        <field name="arch" type="xml">
+            <form string="QR Campaign">
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <div class="oe_button_box" name="button_box">
+                        <button type="action" name="%(action_qrbase_scan_analytics)d" class="oe_stat_button" icon="fa-bar-chart">
+                            <field name="scan_count" widget="statinfo" string="Scans"/>
+                        </button>
+                        <button type="action" name="%(action_qrbase_report_wizard)d" class="oe_stat_button" icon="fa-file-text-o">
+                            <span>Reports</span>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="allocation_kind"/>
+                            <field name="allocation_ref"/>
+                            <field name="responsible_user_id"/>
+                            <field name="website_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="target_url"/>
+                            <field name="purpose"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Branding" name="branding">
+                            <group>
+                                <group>
+                                    <field name="landing_theme"/>
+                                    <field name="landing_logo" widget="image" class="oe_avatar"/>
+                                </group>
+                                <group>
+                                    <field name="landing_logo_url" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="QR Codes" name="codes">
+                            <field name="code_ids">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="token"/>
+                                    <field name="purpose"/>
+                                    <field name="qr_public_url"/>
+                                    <field name="scan_count"/>
+                                    <field name="last_scan_at"/>
+                                    <field name="active"/>
+                                </tree>
+                                <form>
+                                    <sheet>
+                                        <group>
+                                            <field name="name"/>
+                                            <field name="token" readonly="1"/>
+                                            <field name="purpose"/>
+                                            <field name="target_url"/>
+                                            <field name="qr_logo" widget="image" class="oe_avatar"/>
+                                            <field name="utm_source_id" readonly="1"/>
+                                            <field name="active" widget="boolean_toggle"/>
+                                        </group>
+                                        <group>
+                                            <field name="qr_public_url" readonly="1"/>
+                                            <field name="qr_image" widget="image" class="o_qrbase_qr_preview_field" style="max-width: 360px; max-height: 360px;"/>
+                                        </group>
+                                        <group>
+                                            <button name="action_open_landing_page" type="object" string="Open Scan Page" class="btn-primary"/>
+                                            <button name="action_print_qr_code" type="object" string="Print QR Code" class="btn-secondary"/>
+                                        </group>
+                                        <notebook>
+                                            <page string="Scans">
+                                                <field name="scan_ids" readonly="1">
+                                                    <tree>
+                                                        <field name="scanned_at"/>
+                                                        <field name="outcome"/>
+                                                        <field name="resolved_outcome"/>
+                                                        <field name="existing_contact_found"/>
+                                                        <field name="contact_match_method"/>
+                                                        <field name="state"/>
+                                                        <field name="visitor_name"/>
+                                                        <field name="visitor_email"/>
+                                                        <field name="partner_id"/>
+                                                        <field name="lead_id"/>
+                                                    </tree>
+                                                </field>
+                                            </page>
+                                            <page string="Notes">
+                                                <field name="notes"/>
+                                            </page>
+                                        </notebook>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </page>
+                        <page string="Performance" name="performance">
+                            <group>
+                                <field name="code_count" readonly="1"/>
+                                <field name="scan_count" readonly="1"/>
+                                <field name="prospect_count" readonly="1"/>
+                                <field name="customer_count" readonly="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_qrbase_campaign" model="ir.actions.act_window">
+        <field name="name">QR Campaigns</field>
+        <field name="res_model">qrbase.campaign</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_qrbase_code_tree" model="ir.ui.view">
+        <field name="name">qrbase.code.tree</field>
+        <field name="model">qrbase.code</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="campaign_id"/>
+                <field name="purpose"/>
+                <field name="qr_public_url"/>
+                <field name="scan_count"/>
+                <field name="last_scan_at"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_qrbase_code_form" model="ir.ui.view">
+        <field name="name">qrbase.code.form</field>
+        <field name="model">qrbase.code</field>
+        <field name="arch" type="xml">
+            <form string="QR Code">
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <div class="oe_button_box" name="button_box">
+                        <button type="action" name="%(action_qrbase_code_analytics)d" class="oe_stat_button" icon="fa-bar-chart">
+                            <field name="scan_count" widget="statinfo" string="Scans"/>
+                        </button>
+                        <button type="action" name="%(action_qrbase_code_report_wizard)d" class="oe_stat_button" icon="fa-file-text-o">
+                            <span>Reports</span>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="campaign_id"/>
+                            <field name="purpose"/>
+                            <field name="target_url"/>
+                            <field name="qr_logo" widget="image" class="oe_avatar"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                        <group>
+                            <field name="token" readonly="1"/>
+                            <field name="utm_source_id" readonly="1"/>
+                            <field name="qr_public_url" readonly="1"/>
+                            <field name="scan_count" readonly="1"/>
+                            <field name="last_scan_at" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="qr_image" widget="image" class="o_qrbase_qr_preview_field" style="max-width: 420px; max-height: 420px;"/>
+                    </group>
+                    <group>
+                        <button name="action_open_landing_page" type="object" string="Open Scan Page" class="btn-primary"/>
+                        <button name="action_print_qr_code" type="object" string="Print QR Code" class="btn-secondary"/>
+                    </group>
+                    <notebook>
+                        <page string="Scans" name="scans">
+                            <field name="scan_ids" readonly="1">
+                                <tree>
+                                    <field name="scanned_at"/>
+                                    <field name="state"/>
+                                    <field name="outcome"/>
+                                    <field name="resolved_outcome"/>
+                                    <field name="existing_contact_found"/>
+                                    <field name="contact_match_method"/>
+                                    <field name="visitor_name"/>
+                                    <field name="visitor_email"/>
+                                    <field name="partner_id"/>
+                                    <field name="lead_id"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Analytics" name="analytics">
+                            <group>
+                                <field name="registered_scan_count" readonly="1"/>
+                                <field name="unique_contact_count" readonly="1"/>
+                                <field name="customer_count" readonly="1"/>
+                                <field name="prospect_count" readonly="1"/>
+                                <field name="sample_count" readonly="1"/>
+                                <field name="duplicate_contact_count" readonly="1"/>
+                                <field name="newsletter_opt_in_count" readonly="1"/>
+                                <field name="data_share_consent_count" readonly="1"/>
+                                <field name="customer_rate" readonly="1"/>
+                                <field name="duplicate_rate" readonly="1"/>
+                                <field name="newsletter_rate" readonly="1"/>
+                                <field name="data_consent_rate" readonly="1"/>
+                            </group>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_qrbase_code" model="ir.actions.act_window">
+        <field name="name">QR Codes</field>
+        <field name="res_model">qrbase.code</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_qrbase_scan_tree" model="ir.ui.view">
+        <field name="name">qrbase.scan.tree</field>
+        <field name="model">qrbase.scan</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="scanned_at"/>
+                <field name="campaign_id"/>
+                <field name="code_id"/>
+                <field name="state"/>
+                <field name="outcome"/>
+                <field name="resolved_outcome"/>
+                <field name="existing_contact_found"/>
+                <field name="visitor_name"/>
+                <field name="visitor_email"/>
+                <field name="partner_id"/>
+                <field name="lead_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_qrbase_scan_form" model="ir.ui.view">
+        <field name="name">qrbase.scan.form</field>
+        <field name="model">qrbase.scan</field>
+        <field name="arch" type="xml">
+            <form string="QR Scan">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="scanned_at" readonly="1"/>
+                            <field name="campaign_id" readonly="1"/>
+                            <field name="code_id" readonly="1"/>
+                            <field name="state"/>
+                            <field name="outcome"/>
+                            <field name="resolved_outcome" readonly="1"/>
+                            <field name="existing_contact_found" readonly="1"/>
+                            <field name="contact_match_method" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="visitor_name"/>
+                            <field name="visitor_email"/>
+                            <field name="visitor_phone"/>
+                            <field name="partner_id"/>
+                            <field name="lead_id"/>
+                            <field name="consent_newsletter"/>
+                            <field name="consent_share_data"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="landing_url" readonly="1"/>
+                        <field name="ip_address" readonly="1"/>
+                        <field name="user_agent" readonly="1"/>
+                        <field name="referrer" readonly="1"/>
+                    </group>
+                    <group>
+                        <field name="notes"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_qrbase_scan" model="ir.actions.act_window">
+        <field name="name">QR Scans</field>
+        <field name="res_model">qrbase.scan</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_crm_lead_form_qrbase" model="ir.ui.view">
+        <field name="name">crm.lead.form.qrbase</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='extra']//field[@name='source_id']" position="after">
+                <field name="qrbase_code_id"/>
+                <field name="qrbase_scan_id" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <menuitem id="menu_qrbase_root" name="QR Base" sequence="60" web_icon="qrbase,static/description/icon.svg"/>
+    <menuitem id="menu_qrbase_campaigns" name="Campaigns" parent="menu_qrbase_root" action="action_qrbase_campaign" sequence="10"/>
+    <menuitem id="menu_qrbase_codes" name="QR Codes" parent="menu_qrbase_root" action="action_qrbase_code" sequence="20"/>
+    <menuitem id="menu_qrbase_scans" name="Scans" parent="menu_qrbase_root" action="action_qrbase_scan" sequence="30"/>
+</odoo>

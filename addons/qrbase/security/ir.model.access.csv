@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_qrbase_campaign,qrbase.campaign,model_qrbase_campaign,,1,1,1,1
+access_qrbase_code,qrbase.code,model_qrbase_code,,1,1,1,1
+access_qrbase_scan,qrbase.scan,model_qrbase_scan,,1,1,1,1
+access_qrbase_report_wizard,qrbase.report.wizard,model_qrbase_report_wizard,base.group_user,1,1,1,1
