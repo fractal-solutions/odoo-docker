@@ -44,7 +44,7 @@ addons/my_module/
 ```
 
 ## Odoo Config
-File: `config/odoo.conf`
+File: `odoo.conf`
 ```ini
 [options]
 addons_path = /mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons
